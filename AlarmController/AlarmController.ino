@@ -222,8 +222,8 @@ void checkResetButton() {
 }
 
 //// Wifi implementation ////
-char ssid[] = "xd";
-char pass[] = "Omegalul";
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
  
 WiFiSSLClient wificlient;
 

@@ -6,6 +6,7 @@
 
 //// Alarmsystem implementation 
 
+// Value to set alarm on/off
 boolean alarmActive = false;
 
 void setup() {
@@ -37,6 +38,7 @@ void loop() {
   checkResetButton();
 }
 
+// Method to set alarm active of not active 
 void setAlarm(boolean active) {
   alarmActive = active;
 }
@@ -52,6 +54,7 @@ const int rs = 12,
          d7 = 5; 
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7); 
 
+// Setup LCD screen 
 void initLCD() {
    // set the brightness of the LCD screen to the maximum value 
   analogWrite(brightness, 0); 
@@ -59,6 +62,7 @@ void initLCD() {
   lcd.begin(16, 2); // begin LCD screen with 16 columns and 2 rows
 }
 
+// Check incoming value type to deside which status to show on LCD screen
 void outputData(String data, int type) {
   clearLCD();
 
@@ -78,6 +82,7 @@ void outputData(String data, int type) {
   }
 }
 
+// Defines basic information to display 
 void showData(String status, String data) {
   lcd.setCursor(0,0); 
   lcd.print("Status ");
@@ -89,6 +94,7 @@ void showData(String status, String data) {
   lcd.print(data);
 }
 
+// Show message Wifi is not connected 
 void noConnection() {
   clearLCD();
   lcd.setCursor(0,0); 
@@ -97,18 +103,21 @@ void noConnection() {
   lcd.print("Wifi: FALSE");
 }
 
+// Shows message for booting process 
 void isWaiting() {
   clearLCD();
   lcd.setCursor(0,0);
   lcd.print("waiting ...");
 }
 
+// Show message when try connecting to Wifi
 void connecting() {
   clearLCD();
   lcd.setCursor(0,0);
   lcd.print("Try connecting");
 }
 
+// Show message if connection to Wifi was successfully 
 void isConnected() {
   clearLCD();
   lcd.setCursor(0,0); 
@@ -117,6 +126,7 @@ void isConnected() {
   lcd.print("Wifi: TRUE");
 }
 
+// Clear LCD screen 
 void clearLCD() {
   lcd.begin(16, 2);
 }
@@ -125,10 +135,12 @@ void clearLCD() {
 
 const int buzzerPin = 8;
 
+// Setup Buzzer 
 void initBuzzer() {
   pinMode(buzzerPin,OUTPUT);
 }
 
+// Activates Buzzer 
 void setBuzzerForAlarm() {
   if (alarmActive) {
     tone(buzzerPin, 31, 200);
@@ -147,6 +159,7 @@ int redPin= 9;
 int greenPin = 7;
 int bluePin = 6;
 
+// Setup RGB 
 void initRGB() {
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
@@ -171,6 +184,7 @@ void setColor(int redValue, int greenValue, int blueValue) {
   analogWrite(bluePin, blueValue);
 }
 
+// Set RGB to see if alarm is active or not
 void setRgbForAlarm() {
   if (alarmActive) {
     setRedColor();
@@ -186,6 +200,7 @@ int lastState = HIGH;
 int currentState; 
 int buttonState; 
 
+// Setup Reset Button 
 void initResetButton() {
   pinMode(buttonPin, INPUT_PULLUP);
   buttonState = digitalRead(buttonPin);
@@ -193,6 +208,7 @@ void initResetButton() {
   pinMode(buttonPin, INPUT_PULLUP);
 }
 
+// Check reset button if pressed 
 void checkResetButton() {
   // read the state of the switch/button:
   currentState = digitalRead(buttonPin);
@@ -206,12 +222,12 @@ void checkResetButton() {
 }
 
 //// Wifi implementation ////
-
-char ssid[] ="3neo_2.4Ghz_7C57";            
-char pass[] = "R2n7GMGCR5";
+char ssid[] = "xd";
+char pass[] = "Omegalul";
  
 WiFiSSLClient wificlient;
 
+// Setup Wifi connection 
 int initWifi() {
   Serial.begin(115200);
   Serial.print("Connecting Wifi: ");
@@ -237,7 +253,8 @@ int initWifi() {
 //// MQTT Client implementation ////
 
 // MQTT
-#define BROKER_IP "192.168.0.150"
+//#define BROKER_IP "192.168.0.150"
+#define BROKER_IP "broker.hivemq.com"
 #define BROKER_PORT 1883
 #define DEV_NAME "alarm-controller"
 #define MQTT_USER "username"
@@ -245,6 +262,7 @@ int initWifi() {
 WiFiClient net;
 MQTTClient client;
 
+// Connection process for MQTT 
 void connect() {
   Serial.print("checking wifi...");
   while (WiFi.status() != WL_CONNECTED) {
@@ -260,10 +278,11 @@ void connect() {
 
   Serial.println("\nconnected!");
 
-  client.subscribe("dev/test");
+  client.subscribe("KohlenstoffmonoxidFruehwarnsystem/Test");
   outputData("", 1);
 }
 
+// Setup MQTT conntection
 void initMqtt() {
   WiFi.begin(ssid, pass);
   
@@ -273,6 +292,7 @@ void initMqtt() {
   connect();
 }
 
+// Loop connection process over time
 void clientLoop() {
   client.loop();
 
@@ -281,6 +301,7 @@ void clientLoop() {
   }
 }
 
+// Method to receive message from MQTT Broker
 void messageReceived(String &topic, String &payload) {
   outputData(payload, 3);
   int value = payload.toInt();
